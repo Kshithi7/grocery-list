@@ -3,112 +3,146 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Grocery List</title>
+  <title>Interactive Grocery List</title>
   <style>
     body {
       font-family: Arial, sans-serif;
-      padding: 20px;
-    }
-    ul {
-      list-style-type: none;
+      margin: 0;
       padding: 0;
+      background-color: #f9f9f9;
     }
-    li {
-      margin: 10px 0;
+
+    header {
+      background-color: #4CAF50;
+      color: white;
+      text-align: center;
+      padding: 1rem;
     }
-    label {
-      font-size: 16px;
+
+    .container {
+      max-width: 600px;
+      margin: 2rem auto;
+      padding: 1rem;
+      background: white;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+      border-radius: 8px;
     }
-    input[type="number"] {
-      width: 50px;
+
+    .item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 1rem;
     }
+
+    .item input {
+      margin-right: 1rem;
+    }
+
+    .item select {
+      margin-left: 0.5rem;
+    }
+
+    button {
+      padding: 0.5rem 1rem;
+      color: white;
+      background: #4CAF50;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background: #45a049;
+    }
+
+    .download {
+      display: block;
+      margin: 1rem auto;
+      text-align: center;
+    }
+
     .hidden {
       display: none;
     }
   </style>
 </head>
 <body>
+  <header>
+    <h1>My Grocery List</h1>
+  </header>
 
-  <h1>Grocery List</h1>
+  <div class="container">
+    <div id="grocery-list"></div>
+    <button onclick="addItem()">Add Item</button>
+    <button onclick="loadPreviousList()">Load Previous List</button>
+    <div class="download">
+      <button onclick="downloadListAsImage()">Download List as Image</button>
+    </div>
+  </div>
 
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
   <script>
-    // Password Protection
-    const password = prompt("Enter the password to access the grocery list:");
-    if (password !== "yourpassword") {
-      alert("Incorrect password! Access denied.");
-      window.location.href = "https://www.google.com";  // Redirect if wrong password
-    }
+    let groceryList = [];
+    let previousList = JSON.parse(localStorage.getItem('previousList')) || [];
 
-    // Save and display items
-    let items = JSON.parse(localStorage.getItem("groceryItems")) || [];
-
-    // Add item to list
     function addItem() {
-      const itemName = document.getElementById("newItem").value;
-      if (itemName) {
-        const newItem = { name: itemName, quantity: 1, checked: false };
-        items.push(newItem);
-        localStorage.setItem("groceryItems", JSON.stringify(items));
-        document.getElementById("newItem").value = ""; // Clear input
-        renderList();
-      }
+      const itemName = prompt('Enter item name:');
+      if (!itemName) return;
+
+      const quantity = prompt('Enter quantity:');
+      if (!quantity) return;
+
+      const unit = prompt('Enter unit (kg, litres, pieces):', 'kg');
+
+      const newItem = { name: itemName, quantity, unit };
+      groceryList.push(newItem);
+      displayList();
     }
 
-    // Mark item as bought (checked)
-    function toggleCheck(index) {
-      items[index].checked = !items[index].checked;
-      localStorage.setItem("groceryItems", JSON.stringify(items));
-      renderList();
-    }
+    function displayList() {
+      const listContainer = document.getElementById('grocery-list');
+      listContainer.innerHTML = '';
 
-    // Update the quantity of an item
-    function updateQuantity(index) {
-      const quantity = document.getElementById(`quantity${index}`).value;
-      items[index].quantity = quantity;
-      localStorage.setItem("groceryItems", JSON.stringify(items));
-      renderList();
-    }
+      groceryList.forEach((item, index) => {
+        const itemDiv = document.createElement('div');
+        itemDiv.className = 'item';
 
-    // Render the list from localStorage
-    function renderList() {
-      const listContainer = document.getElementById("itemList");
-      listContainer.innerHTML = "";
-      
-      items.forEach((item, index) => {
-        if (item.checked) {
-          listContainer.innerHTML += `
-            <li>
-              <label>
-                <input type="checkbox" checked disabled>
-                ${item.name} - Quantity: ${item.quantity}
-              </label>
-            </li>
-          `;
-        } else {
-          listContainer.innerHTML += `
-            <li>
-              <label>
-                <input type="checkbox" onchange="toggleCheck(${index})">
-                ${item.name} 
-              </label>
-              <input type="number" id="quantity${index}" value="${item.quantity}" onchange="updateQuantity(${index})">
-            </li>
-          `;
-        }
+        itemDiv.innerHTML = `
+          <input type="checkbox" onchange="removeItem(${index})">
+          <span>${item.name} - ${item.quantity} ${item.unit}</span>
+        `;
+
+        listContainer.appendChild(itemDiv);
       });
     }
 
-    // Initial render of the list
-    renderList();
+    function removeItem(index) {
+      groceryList.splice(index, 1);
+      displayList();
+    }
+
+    function loadPreviousList() {
+      groceryList = [...previousList];
+      displayList();
+    }
+
+    function savePreviousList() {
+      localStorage.setItem('previousList', JSON.stringify(groceryList));
+    }
+
+    function downloadListAsImage() {
+      const listContainer = document.querySelector('.container');
+
+      html2canvas(listContainer).then((canvas) => {
+        const link = document.createElement('a');
+        link.download = 'grocery-list.png';
+        link.href = canvas.toDataURL();
+        link.click();
+      });
+    }
+
+    window.addEventListener('beforeunload', savePreviousList);
   </script>
-
-  <div>
-    <input type="text" id="newItem" placeholder="Add new item" />
-    <button onclick="addItem()">Add Item</button>
-  </div>
-
-  <h2>Items to Buy:</h2>
-  <ul id="itemList"></ul>
-
 </body>
 </html>
