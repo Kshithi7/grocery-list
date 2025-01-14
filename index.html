@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Grocery List</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+    }
+    ul {
+      list-style-type: none;
+      padding: 0;
+    }
+    li {
+      margin: 10px 0;
+    }
+    label {
+      font-size: 16px;
+    }
+    input[type="number"] {
+      width: 50px;
+    }
+    .hidden {
+      display: none;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Grocery List</h1>
+
+  <script>
+    // Password Protection
+    const password = prompt("Enter the password to access the grocery list:");
+    if (password !== "yourpassword") {
+      alert("Incorrect password! Access denied.");
+      window.location.href = "https://www.google.com";  // Redirect if wrong password
+    }
+
+    // Save and display items
+    let items = JSON.parse(localStorage.getItem("groceryItems")) || [];
+
+    // Add item to list
+    function addItem() {
+      const itemName = document.getElementById("newItem").value;
+      if (itemName) {
+        const newItem = { name: itemName, quantity: 1, checked: false };
+        items.push(newItem);
+        localStorage.setItem("groceryItems", JSON.stringify(items));
+        document.getElementById("newItem").value = ""; // Clear input
+        renderList();
+      }
+    }
+
+    // Mark item as bought (checked)
+    function toggleCheck(index) {
+      items[index].checked = !items[index].checked;
+      localStorage.setItem("groceryItems", JSON.stringify(items));
+      renderList();
+    }
+
+    // Update the quantity of an item
+    function updateQuantity(index) {
+      const quantity = document.getElementById(`quantity${index}`).value;
+      items[index].quantity = quantity;
+      localStorage.setItem("groceryItems", JSON.stringify(items));
+      renderList();
+    }
+
+    // Render the list from localStorage
+    function renderList() {
+      const listContainer = document.getElementById("itemList");
+      listContainer.innerHTML = "";
+      
+      items.forEach((item, index) => {
+        if (item.checked) {
+          listContainer.innerHTML += `
+            <li>
+              <label>
+                <input type="checkbox" checked disabled>
+                ${item.name} - Quantity: ${item.quantity}
+              </label>
+            </li>
+          `;
+        } else {
+          listContainer.innerHTML += `
+            <li>
+              <label>
+                <input type="checkbox" onchange="toggleCheck(${index})">
+                ${item.name} 
+              </label>
+              <input type="number" id="quantity${index}" value="${item.quantity}" onchange="updateQuantity(${index})">
+            </li>
+          `;
+        }
+      });
+    }
+
+    // Initial render of the list
+    renderList();
+  </script>
+
+  <div>
+    <input type="text" id="newItem" placeholder="Add new item" />
+    <button onclick="addItem()">Add Item</button>
+  </div>
+
+  <h2>Items to Buy:</h2>
+  <ul id="itemList"></ul>
+
+</body>
+</html>
