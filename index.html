@@ -114,107 +114,129 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/0.4.1/html2canvas.min.js"></script>
     <script>
         let groceryLists = [];
-        let currentList = [];
+let currentList = [];
 
-        function checkPassword() {
-            const password = document.getElementById('password').value;
-            const correctPassword = "12345";
+function checkPassword() {
+    const password = document.getElementById('password').value;
+    const correctPassword = "12345";
 
-            if (password === correctPassword) {
-                document.getElementById('login-container').style.display = 'none';
-                document.getElementById('welcome-message').style.display = 'block';
-            } else {
-                alert('Incorrect password!');
-            }
-        }
+    if (password === correctPassword) {
+        document.getElementById('login-container').style.display = 'none';
+        document.getElementById('welcome-message').style.display = 'block';
+    } else {
+        alert('Incorrect password!');
+    }
+}
 
-        function showDashboard() {
-            document.getElementById('welcome-message').style.display = 'none';
-            document.getElementById('dashboard').style.display = 'block';
-        }
+function showDashboard() {
+    document.getElementById('welcome-message').style.display = 'none';
+    document.getElementById('dashboard').style.display = 'block';
+}
 
-        function createList() {
-            document.getElementById('create-list-form').style.display = 'block';
-            document.getElementById('edit-list-form').style.display = 'none';
-            currentList = [];
-            document.getElementById('new-list-items').innerHTML = '';
-        }
+function createList() {
+    document.getElementById('create-list-form').style.display = 'block';
+    document.getElementById('edit-list-form').style.display = 'none';
+    currentList = [];
+    document.getElementById('new-list-items').innerHTML = '';
+}
 
-        function editList() {
-            document.getElementById('edit-list-form').style.display = 'block';
-            document.getElementById('create-list-form').style.display = 'none';
-            const selectList = document.getElementById('select-list');
-            selectList.innerHTML = '<option value="">Select List to Edit</option>';
-            groceryLists.forEach((list, index) => {
-                const option = document.createElement('option');
-                option.value = index;
-                option.textContent = `List ${index + 1}`;
-                selectList.appendChild(option);
-            });
-        }
+function editList() {
+    document.getElementById('edit-list-form').style.display = 'block';
+    document.getElementById('create-list-form').style.display = 'none';
+    const selectList = document.getElementById('select-list');
+    selectList.innerHTML = '<option value="">Select List to Edit</option>';
+    groceryLists.forEach((list, index) => {
+        const option = document.createElement('option');
+        option.value = index;
+        option.textContent = `List ${index + 1}`;
+        selectList.appendChild(option);
+    });
+}
 
-        function addItemToNewList() {
-            const itemName = document.getElementById('item-name').value;
-            const itemQuantity = document.getElementById('item-quantity').value;
-            const item = { name: itemName, quantity: itemQuantity };
-            currentList.push(item);
-            document.getElementById('item-name').value = '';
-            document.getElementById('item-quantity').value = '';
-            updateNewListItems();
-        }
+function addItemToNewList() {
+    const itemName = document.getElementById('item-name').value;
+    const itemQuantity = document.getElementById('item-quantity').value;
+    const item = { name: itemName, quantity: itemQuantity };
+    currentList.push(item);
+    document.getElementById('item-name').value = '';
+    document.getElementById('item-quantity').value = '';
+    updateNewListItems();
+}
 
-        function updateNewListItems() {
-            const listContainer = document.getElementById('new-list-items');
-            listContainer.innerHTML = '';
-            currentList.forEach(item => {
-                const itemDiv = document.createElement('div');
-                itemDiv.textContent = `${item.name} - ${item.quantity}`;
-                listContainer.appendChild(itemDiv);
-            });
-        }
+function updateNewListItems() {
+    const listContainer = document.getElementById('new-list-items');
+    listContainer.innerHTML = '';
+    currentList.forEach(item => {
+        const itemDiv = document.createElement('div');
+        itemDiv.textContent = `${item.name} - ${item.quantity}`;
+        listContainer.appendChild(itemDiv);
+    });
+}
 
-        function saveList() {
-            if (currentList.length > 0) {
-                groceryLists.push(currentList);
-                alert('New list saved!');
-                document.getElementById('create-list-form').style.display = 'none';
-            } else {
-                alert('Please add items to the list before saving!');
-            }
-        }
+function saveList() {
+    if (currentList.length > 0) {
+        groceryLists.push(currentList);
+        alert('New list saved!');
+        document.getElementById('create-list-form').style.display = 'none';
+    } else {
+        alert('Please add items to the list before saving!');
+    }
+}
 
-        function loadListToEdit() {
-            const selectedListIndex = document.getElementById('select-list').value;
-            if (selectedListIndex === '') return;
+function loadListToEdit() {
+    const selectedListIndex = document.getElementById('select-list').value;
+    if (selectedListIndex === '') return;
 
-            const selectedList = groceryLists[selectedListIndex];
-            const listContainer = document.getElementById('edit-list-items');
-            listContainer.innerHTML = '';
-            selectedList.forEach(item => {
-                const itemDiv = document.createElement('div');
-                itemDiv.textContent = `${item.name} - ${item.quantity}`;
-                listContainer.appendChild(itemDiv);
-            });
-        }
+    const selectedList = groceryLists[selectedListIndex];
+    const listContainer = document.getElementById('edit-list-items');
+    listContainer.innerHTML = '';  // Clear the existing list
 
-        function saveEditedList() {
-            const selectedListIndex = document.getElementById('select-list').value;
-            if (selectedListIndex === '') return;
+    selectedList.forEach((item, index) => {
+        const itemDiv = document.createElement('div');
+        itemDiv.innerHTML = `
+            <input type="text" class="edit-item-name" value="${item.name}" placeholder="Item Name">
+            <input type="number" class="edit-item-quantity" value="${item.quantity}" placeholder="Quantity">
+            <button onclick="removeItemFromEditList(${selectedListIndex}, ${index})">Remove</button>
+        `;
+        listContainer.appendChild(itemDiv);
+    });
+}
 
-            groceryLists[selectedListIndex] = currentList;
-            alert('List saved!');
-            document.getElementById('edit-list-form').style.display = 'none';
-        }
+function removeItemFromEditList(listIndex, itemIndex) {
+    groceryLists[listIndex].splice(itemIndex, 1);  // Remove item from list
+    loadListToEdit();  // Re-load the updated list for editing
+}
 
-        function downloadList() {
-            const listContainer = document.getElementById('new-list-items');
-            html2canvas(listContainer).then(function(canvas) {
-                const link = document.createElement('a');
-                link.href = canvas.toDataURL();
-                link.download = 'grocery-list.png';
-                link.click();
-            });
-        }
-    </script>
-</body>
-</html>
+function saveEditedList() {
+    const selectedListIndex = document.getElementById('select-list').value;
+    if (selectedListIndex === '') return;
+
+    const editedItems = document.querySelectorAll('#edit-list-items div');
+    const updatedList = [];
+
+    editedItems.forEach(itemDiv => {
+        const name = itemDiv.querySelector('.edit-item-name').value;
+        const quantity = itemDiv.querySelector('.edit-item-quantity').value;
+        updatedList.push({ name, quantity });
+    });
+
+    groceryLists[selectedListIndex] = updatedList;  // Update the list with edited items
+    alert('List saved!');
+    document.getElementById('edit-list-form').style.display = 'none';
+}
+
+function downloadList() {
+    const listContainer = document.getElementById('new-list-items');
+    
+    if (listContainer.children.length === 0) {
+        alert('No items to download!');
+        return;
+    }
+
+    html2canvas(listContainer).then(function(canvas) {
+        const link = document.createElement('a');
+        link.href = canvas.toDataURL();
+        link.download = 'grocery-list.png';
+        link.click();
+    });
+}
