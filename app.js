@@ -106,7 +106,17 @@ function saveEditedList() {
     document.getElementById('edit-list-form').style.display = 'none';
 }
 
-// Download list as image (this can be implemented using html2canvas library later)
+// Download list as image
 function downloadList() {
-    alert('Downloading the list as an image!');
+    // Select the list items you want to capture as an image
+    const listContainer = document.getElementById('new-list-items');
+    
+    // Use html2canvas to capture the content of listContainer as an image
+    html2canvas(listContainer).then(function(canvas) {
+        // Create a download link
+        const link = document.createElement('a');
+        link.href = canvas.toDataURL();  // Convert canvas to image data URL
+        link.download = 'grocery-list.png';  // Set the default filename
+        link.click();  // Trigger the download
+    });
 }
