@@ -4,50 +4,217 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Grocery List</title>
-    <link rel="stylesheet" href="styles.css">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/0.4.1/html2canvas.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #ffccff, #ff99cc, #ff66b2); /* Gradient background */
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .container {
+            background-color: rgba(255, 255, 255, 0.9); /* Semi-transparent white */
+            border-radius: 20px;
+            padding: 30px;
+            width: 90%;
+            max-width: 600px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1); /* Soft shadow */
+            text-align: center;
+        }
+
+        h1, h2 {
+            color: #333;
+        }
+
+        button {
+            background: linear-gradient(135deg, #ff66b2, #ff3385);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            font-size: 16px;
+            margin-top: 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: transform 0.2s ease-in-out, background-color 0.3s;
+        }
+
+        button:hover {
+            background-color: #ff3385;
+            transform: scale(1.05);
+        }
+
+        input {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 8px;
+            width: 80%;
+            font-size: 16px;
+        }
+
+        #create-list-form, #edit-list-form {
+            display: none;
+            margin-top: 20px;
+        }
+
+        .list-items {
+            padding: 15px;
+            background-color: #fff;
+            border-radius: 8px;
+            margin-top: 20px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .list-items div {
+            margin-bottom: 10px;
+        }
+    </style>
 </head>
 <body>
-    <div id="login-container">
+
+    <div class="container" id="login-container">
+        <h1>Grocery List App</h1>
         <input type="password" id="password" placeholder="Enter Password">
         <button onclick="checkPassword()">Login</button>
     </div>
 
-    <div id="welcome-message" style="display: none;">
-        <h1>Welcome, you have successfully logged in!</h1>
+    <div class="container" id="welcome-message" style="display: none;">
+        <h2>Welcome! You're logged in.</h2>
         <button onclick="showDashboard()">Go to Dashboard</button>
     </div>
 
-    <div id="dashboard" style="display: none;">
+    <div class="container" id="dashboard" style="display: none;">
         <h2>Grocery List Dashboard</h2>
         <button onclick="createList()">Create New List</button>
         <button onclick="editList()">Edit Existing List</button>
         <button onclick="downloadList()">Download List as Image</button>
-        
-        <div id="create-list-form" style="display: none;">
+
+        <div id="create-list-form">
             <h3>Create New Grocery List</h3>
-            <form id="new-list-form">
-                <input type="text" id="item-name" placeholder="Enter Item" required>
-                <input type="number" id="item-quantity" placeholder="Enter Quantity" required>
-                <button type="submit">Add Item</button>
-            </form>
-            <div id="new-list-items"></div>
+            <input type="text" id="item-name" placeholder="Enter Item" required>
+            <input type="number" id="item-quantity" placeholder="Enter Quantity" required>
+            <button onclick="addItemToNewList()">Add Item</button>
+            <div class="list-items" id="new-list-items"></div>
             <button onclick="saveList()">Save List</button>
         </div>
 
-        <div id="edit-list-form" style="display: none;">
-            <h3>Edit Existing List</h3>
-            <form id="edit-list-form">
-                <select id="select-list" onchange="loadListToEdit()">
-                    <option value="">Select List to Edit</option>
-                    <!-- Options will be populated by JavaScript -->
-                </select>
-            </form>
-            <div id="edit-list-items"></div>
+        <div id="edit-list-form">
+            <h3>Edit Existing Grocery List</h3>
+            <select id="select-list" onchange="loadListToEdit()">
+                <option value="">Select List to Edit</option>
+            </select>
+            <div class="list-items" id="edit-list-items"></div>
             <button onclick="saveEditedList()">Save Changes</button>
         </div>
     </div>
 
-    <script src="app.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/0.4.1/html2canvas.min.js"></script>
+    <script>
+        let groceryLists = [];
+        let currentList = [];
+
+        function checkPassword() {
+            const password = document.getElementById('password').value;
+            const correctPassword = "12345";
+
+            if (password === correctPassword) {
+                document.getElementById('login-container').style.display = 'none';
+                document.getElementById('welcome-message').style.display = 'block';
+            } else {
+                alert('Incorrect password!');
+            }
+        }
+
+        function showDashboard() {
+            document.getElementById('welcome-message').style.display = 'none';
+            document.getElementById('dashboard').style.display = 'block';
+        }
+
+        function createList() {
+            document.getElementById('create-list-form').style.display = 'block';
+            document.getElementById('edit-list-form').style.display = 'none';
+            currentList = [];
+            document.getElementById('new-list-items').innerHTML = '';
+        }
+
+        function editList() {
+            document.getElementById('edit-list-form').style.display = 'block';
+            document.getElementById('create-list-form').style.display = 'none';
+            const selectList = document.getElementById('select-list');
+            selectList.innerHTML = '<option value="">Select List to Edit</option>';
+            groceryLists.forEach((list, index) => {
+                const option = document.createElement('option');
+                option.value = index;
+                option.textContent = `List ${index + 1}`;
+                selectList.appendChild(option);
+            });
+        }
+
+        function addItemToNewList() {
+            const itemName = document.getElementById('item-name').value;
+            const itemQuantity = document.getElementById('item-quantity').value;
+            const item = { name: itemName, quantity: itemQuantity };
+            currentList.push(item);
+            document.getElementById('item-name').value = '';
+            document.getElementById('item-quantity').value = '';
+            updateNewListItems();
+        }
+
+        function updateNewListItems() {
+            const listContainer = document.getElementById('new-list-items');
+            listContainer.innerHTML = '';
+            currentList.forEach(item => {
+                const itemDiv = document.createElement('div');
+                itemDiv.textContent = `${item.name} - ${item.quantity}`;
+                listContainer.appendChild(itemDiv);
+            });
+        }
+
+        function saveList() {
+            if (currentList.length > 0) {
+                groceryLists.push(currentList);
+                alert('New list saved!');
+                document.getElementById('create-list-form').style.display = 'none';
+            } else {
+                alert('Please add items to the list before saving!');
+            }
+        }
+
+        function loadListToEdit() {
+            const selectedListIndex = document.getElementById('select-list').value;
+            if (selectedListIndex === '') return;
+
+            const selectedList = groceryLists[selectedListIndex];
+            const listContainer = document.getElementById('edit-list-items');
+            listContainer.innerHTML = '';
+            selectedList.forEach(item => {
+                const itemDiv = document.createElement('div');
+                itemDiv.textContent = `${item.name} - ${item.quantity}`;
+                listContainer.appendChild(itemDiv);
+            });
+        }
+
+        function saveEditedList() {
+            const selectedListIndex = document.getElementById('select-list').value;
+            if (selectedListIndex === '') return;
+
+            groceryLists[selectedListIndex] = currentList;
+            alert('List saved!');
+            document.getElementById('edit-list-form').style.display = 'none';
+        }
+
+        function downloadList() {
+            const listContainer = document.getElementById('new-list-items');
+            html2canvas(listContainer).then(function(canvas) {
+                const link = document.createElement('a');
+                link.href = canvas.toDataURL();
+                link.download = 'grocery-list.png';
+                link.click();
+            });
+        }
+    </script>
 </body>
 </html>
