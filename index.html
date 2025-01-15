@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Grocery List</title>
     <link rel="stylesheet" href="styles.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/0.4.1/html2canvas.min.js"></script>
 </head>
 <body>
     <div id="login-container">
@@ -22,6 +23,29 @@
         <button onclick="createList()">Create New List</button>
         <button onclick="editList()">Edit Existing List</button>
         <button onclick="downloadList()">Download List as Image</button>
+        
+        <div id="create-list-form" style="display: none;">
+            <h3>Create New Grocery List</h3>
+            <form id="new-list-form">
+                <input type="text" id="item-name" placeholder="Enter Item" required>
+                <input type="number" id="item-quantity" placeholder="Enter Quantity" required>
+                <button type="submit">Add Item</button>
+            </form>
+            <div id="new-list-items"></div>
+            <button onclick="saveList()">Save List</button>
+        </div>
+
+        <div id="edit-list-form" style="display: none;">
+            <h3>Edit Existing List</h3>
+            <form id="edit-list-form">
+                <select id="select-list" onchange="loadListToEdit()">
+                    <option value="">Select List to Edit</option>
+                    <!-- Options will be populated by JavaScript -->
+                </select>
+            </form>
+            <div id="edit-list-items"></div>
+            <button onclick="saveEditedList()">Save Changes</button>
+        </div>
     </div>
 
     <script src="app.js"></script>
