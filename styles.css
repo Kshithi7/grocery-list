@@ -32,7 +32,14 @@ button {
     margin: 10px;
     cursor: pointer;
 }
-
+#new-list-items {
+    padding: 10px;
+    background-color: #fff;
+    border: 1px solid #ccc;
+    width: 300px;
+    margin: 0 auto;
+    font-family: Arial, sans-serif;
+}
 button:hover {
     background-color: #45a049;
 }
