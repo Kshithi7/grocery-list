@@ -3,174 +3,107 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Interactive Grocery List</title>
+  <title>Simple Grocery List with Password Protection</title>
   <style>
     body {
       font-family: Arial, sans-serif;
-      margin: 0;
-      padding: 0;
-      background-color: #f9f9f9;
+      margin: 20px;
     }
-
-    header {
-      background-color: #4CAF50;
-      color: white;
-      text-align: center;
-      padding: 1rem;
+    .list-item {
+      margin: 5px 0;
     }
-
-    .container {
-      max-width: 600px;
-      margin: 2rem auto;
-      padding: 1rem;
-      background: white;
-      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
-      border-radius: 8px;
-    }
-
-    .item {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      margin-bottom: 1rem;
-      padding: 0.5rem;
-      border-bottom: 1px solid #ddd;
-      transition: background-color 0.3s;
-    }
-
-    .item:hover {
-      background-color: #f0f0f0;
-    }
-
-    .item input {
-      margin-right: 1rem;
-    }
-
-    .item select {
-      margin-left: 0.5rem;
-    }
-
-    button {
-      padding: 0.5rem 1rem;
-      color: white;
-      background: #4CAF50;
-      border: none;
-      border-radius: 4px;
-      cursor: pointer;
-      margin: 0.5rem 0;
-      width: 100%;
-    }
-
-    button:hover {
-      background: #45a049;
-    }
-
-    .download {
-      display: block;
-      margin: 1rem auto;
-      text-align: center;
-    }
-
-    .hidden {
+    #main-content {
       display: none;
-    }
-
-    input[type="text"], input[type="number"], select {
-      padding: 0.5rem;
-      margin-right: 1rem;
-      width: 60%;
-      border-radius: 4px;
-      border: 1px solid #ddd;
-    }
-
-    input[type="checkbox"] {
-      cursor: pointer;
     }
   </style>
 </head>
 <body>
-  <header>
-    <h1>My Grocery List</h1>
-  </header>
+  <h1>My Grocery List</h1>
 
-  <div class="container">
-    <div id="grocery-list"></div>
-    <button onclick="addItem()">Add Item</button>
-    <button onclick="loadPreviousList()">Load Previous List</button>
-    <button onclick="clearAllItems()">Clear All</button>
-    <div class="download">
-      <button onclick="downloadListAsImage()">Download List as Image</button>
-    </div>
+  <div id="password-prompt">
+    <label for="password">Enter Password:</label>
+    <input type="password" id="password" placeholder="Password">
+    <button id="login-btn">Login</button>
   </div>
 
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <div id="main-content">
+    <form id="grocery-form">
+      <input type="text" id="item-input" placeholder="Enter item" required>
+      <input type="number" id="quantity-input" placeholder="Quantity" min="1" required>
+      <select id="unit-select">
+        <option value="kg">kg</option>
+        <option value="grams">grams</option>
+        <option value="liters">liters</option>
+        <option value="units">units</option>
+        <option value="packets">packets</option>
+      </select>
+      <button type="submit">Add Item</button>
+    </form>
+
+    <ul id="grocery-list"></ul>
+    
+    <button id="download-btn">Download List</button>
+  </div>
+
   <script>
-    let groceryList = [];
-    let previousList = JSON.parse(localStorage.getItem('previousList')) || [];
+    const passwordPrompt = document.getElementById('password-prompt');
+    const mainContent = document.getElementById('main-content');
+    const loginBtn = document.getElementById('login-btn');
+    const passwordInput = document.getElementById('password');
 
-    function addItem() {
-      const itemName = prompt('Enter item name:');
-      if (!itemName) return alert("Item name is required");
+    const correctPassword = 'grocery123'; // Set your password here
 
-      const quantity = prompt('Enter quantity:');
-      if (!quantity || isNaN(quantity)) return alert("Please enter a valid quantity");
+    const form = document.getElementById('grocery-form');
+    const itemInput = document.getElementById('item-input');
+    const quantityInput = document.getElementById('quantity-input');
+    const unitSelect = document.getElementById('unit-select');
+    const list = document.getElementById('grocery-list');
+    const downloadBtn = document.getElementById('download-btn');
 
-      const unit = prompt('Enter unit (kg, litres, pieces):', 'kg');
-      if (!unit) return alert("Please enter a unit");
+    const items = [];
 
-      const newItem = { name: itemName, quantity, unit };
-      groceryList.push(newItem);
-      displayList();
-    }
+    // Login functionality
+    loginBtn.addEventListener('click', () => {
+      const enteredPassword = passwordInput.value.trim();
 
-    function displayList() {
-      const listContainer = document.getElementById('grocery-list');
-      listContainer.innerHTML = '';
+      if (enteredPassword === correctPassword) {
+        passwordPrompt.style.display = 'none';
+        mainContent.style.display = 'block';
+      } else {
+        alert('Incorrect password!');
+      }
+    });
 
-      groceryList.forEach((item, index) => {
-        const itemDiv = document.createElement('div');
-        itemDiv.className = 'item';
+    // Add items to the list
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const item = itemInput.value.trim();
+      const quantity = quantityInput.value.trim();
+      const unit = unitSelect.value;
 
-        itemDiv.innerHTML = `
-          <input type="checkbox" onchange="removeItem(${index})">
-          <span>${item.name} - ${item.quantity} ${item.unit}</span>
-        `;
+      if (item && quantity && unit) {
+        const itemDetails = `${item} - ${quantity} ${unit}`;
+        items.push(itemDetails);
 
-        listContainer.appendChild(itemDiv);
-      });
-    }
+        const listItem = document.createElement('li');
+        listItem.textContent = itemDetails;
+        listItem.classList.add('list-item');
+        list.appendChild(listItem);
 
-    function removeItem(index) {
-      groceryList.splice(index, 1);
-      displayList();
-    }
+        itemInput.value = '';
+        quantityInput.value = '';
+      }
+    });
 
-    function loadPreviousList() {
-      groceryList = [...previousList];
-      displayList();
-    }
-
-    function savePreviousList() {
-      localStorage.setItem('previousList', JSON.stringify(groceryList));
-    }
-
-    function clearAllItems() {
-      groceryList = [];
-      displayList();
-    }
-
-    function downloadListAsImage() {
-      const listContainer = document.querySelector('.container');
-
-      html2canvas(listContainer).then((canvas) => {
-        const link = document.createElement('a');
-        link.download = 'grocery-list.png';
-        link.href = canvas.toDataURL();
-        link.click();
-      });
-    }
-
-    window.addEventListener('beforeunload', savePreviousList);
+    // Download the list as a text file
+    downloadBtn.addEventListener('click', () => {
+      const blob = new Blob([items.join('\n')], { type: 'text/plain' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = 'grocery-list.txt';
+      a.click();
+      URL.revokeObjectURL(a.href);
+    });
   </script>
 </body>
 </html>
