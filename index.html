@@ -1,109 +1,29 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Simple Grocery List with Password Protection</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      margin: 20px;
-    }
-    .list-item {
-      margin: 5px 0;
-    }
-    #main-content {
-      display: none;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Grocery List</title>
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-  <h1>My Grocery List</h1>
+    <div id="login-container">
+        <input type="password" id="password" placeholder="Enter Password">
+        <button onclick="checkPassword()">Login</button>
+    </div>
 
-  <div id="password-prompt">
-    <label for="password">Enter Password:</label>
-    <input type="password" id="password" placeholder="Password">
-    <button id="login-btn">Login</button>
-  </div>
+    <div id="welcome-message" style="display: none;">
+        <h1>Welcome, you have successfully logged in!</h1>
+        <button onclick="showDashboard()">Go to Dashboard</button>
+    </div>
 
-  <div id="main-content">
-    <form id="grocery-form">
-      <input type="text" id="item-input" placeholder="Enter item" required>
-      <input type="number" id="quantity-input" placeholder="Quantity" min="1" required>
-      <select id="unit-select">
-        <option value="kg">kg</option>
-        <option value="grams">grams</option>
-        <option value="liters">liters</option>
-        <option value="units">units</option>
-        <option value="packets">packets</option>
-      </select>
-      <button type="submit">Add Item</button>
-    </form>
+    <div id="dashboard" style="display: none;">
+        <h2>Grocery List Dashboard</h2>
+        <button onclick="createList()">Create New List</button>
+        <button onclick="editList()">Edit Existing List</button>
+        <button onclick="downloadList()">Download List as Image</button>
+    </div>
 
-    <ul id="grocery-list"></ul>
-    
-    <button id="download-btn">Download List</button>
-  </div>
-
-  <script>
-    const passwordPrompt = document.getElementById('password-prompt');
-    const mainContent = document.getElementById('main-content');
-    const loginBtn = document.getElementById('login-btn');
-    const passwordInput = document.getElementById('password');
-
-    const correctPassword = 'grocery123'; // Set your password here
-
-    const form = document.getElementById('grocery-form');
-    const itemInput = document.getElementById('item-input');
-    const quantityInput = document.getElementById('quantity-input');
-    const unitSelect = document.getElementById('unit-select');
-    const list = document.getElementById('grocery-list');
-    const downloadBtn = document.getElementById('download-btn');
-
-    const items = [];
-
-    // Login functionality
-    loginBtn.addEventListener('click', () => {
-      const enteredPassword = passwordInput.value.trim();
-
-      if (enteredPassword === correctPassword) {
-        passwordPrompt.style.display = 'none';
-        mainContent.style.display = 'block';
-      } else {
-        alert('Incorrect password!');
-      }
-    });
-
-    // Add items to the list
-    form.addEventListener('submit', (e) => {
-      e.preventDefault();
-      const item = itemInput.value.trim();
-      const quantity = quantityInput.value.trim();
-      const unit = unitSelect.value;
-
-      if (item && quantity && unit) {
-        const itemDetails = `${item} - ${quantity} ${unit}`;
-        items.push(itemDetails);
-
-        const listItem = document.createElement('li');
-        listItem.textContent = itemDetails;
-        listItem.classList.add('list-item');
-        list.appendChild(listItem);
-
-        itemInput.value = '';
-        quantityInput.value = '';
-      }
-    });
-
-    // Download the list as a text file
-    downloadBtn.addEventListener('click', () => {
-      const blob = new Blob([items.join('\n')], { type: 'text/plain' });
-      const a = document.createElement('a');
-      a.href = URL.createObjectURL(blob);
-      a.download = 'grocery-list.txt';
-      a.click();
-      URL.revokeObjectURL(a.href);
-    });
-  </script>
+    <script src="app.js"></script>
 </body>
 </html>
